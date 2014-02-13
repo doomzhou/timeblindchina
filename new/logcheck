@@ -1,0 +1,14 @@
+#!/bin/bash
+#echo -e "you cleck \033[1;31;1m$1\033[0m@\033[1;31;1m$2\033[0m app"
+input=$1
+if [[ ! $input =~ ^[0-9]{4}$ ]];then
+    echo -e "is this tomcat port? \033[1;32;1m$input \033[0m" ; exit 2;
+fi
+
+cd "/web/service/"
+target=`ls | awk /$input/`
+if [[ $input =~ ^[0-9]{4}$ ]];then echo -e "\033[1;33;1m$target\033[0m";else echo -e "is this tomcat port? \033[1;31;1m$2\033[0m" ; exit 2;fi
+if [[ ! -d $target ]] ;then echo "No this tomcat exit............" ;exit;fi
+cd $target
+#echo $target catalina.out
+/web/eln4share/test/zlfloganalysis.sh && exit 1

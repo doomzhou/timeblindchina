@@ -1,0 +1,113 @@
+#!/bin/bash
+#release version2 fix bug json data multi find
+#read all env {{{1
+source /etc/profile
+source ~/.bash_profile
+#if parameter is allow{{{1 
+if [[ $1 == "--help" ]];then
+	echo -e "Welcome to use this shell (\033[1;33;1mparameter btm-web 2 5\033[0m)";exit 2;fi
+
+if [[ -z $1 ]] || [[ -z $2 ]] || [[ -z $3 ]]; then 
+	echo -e "Please Input An Appname and environment(e.g.\033[44;31;1m btm-web 2 2\033[0m)";exit 2;fi
+#if test2 of test3 {{{1
+if [[ $2 == "2" ]]
+then
+	zlfip=`awk -v RS="server-name" -v FS='"?"' /^^\":\"$1/'{printf("%s\n",$9)}' /web/eln4share/test/new/datajson/test2.json` 
+	zlfport=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$13)}' /web/eln4share/test/new/datajson/test2.json` 
+elif [[ $2 == "pre" ]];then
+	zlftemp=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$0)}' /web/eln4share/test/new/datajson/pre.json`
+	if [[ `expr length $zlftemp` -gt 80 ]]
+	then
+		zlfip=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$9)}' /web/eln4share/test/new/datajson/pre.json` 
+		zlfport=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$13)}' /web/eln4share/test/new/datajson/pre.json` 
+		zlfip1=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$17)}' /web/eln4share/test/new/datajson/pre.json` 
+		zlfport1=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$21)}' /web/eln4share/test/new/datajson/pre.json` 
+	else
+		zlfip=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$9)}' /web/eln4share/test/new/datajson/pre.json` 
+		zlfport=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$13)}' /web/eln4share/test/new/datajson/pre.json` 
+	fi
+else
+	zlftemp=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$0)}' /web/eln4share/test/new/datajson/test3.json`
+	if [[ `expr length $zlftemp` -gt 80 ]]
+	then
+		zlfip=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$9)}' /web/eln4share/test/new/datajson/test3.json` 
+		zlfport=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$13)}' /web/eln4share/test/new/datajson/test3.json` 
+		zlfip1=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$17)}' /web/eln4share/test/new/datajson/test3.json` 
+		zlfport1=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$21)}' /web/eln4share/test/new/datajson/test3.json` 
+	else
+		zlfip=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$9)}' /web/eln4share/test/new/datajson/test3.json` 
+		zlfport=`awk -v RS="server-name" -v FS='"?"' /^\":\"$1/'{printf("%s\n",$13)}' /web/eln4share/test/new/datajson/test3.json` 
+	fi
+fi
+
+#check input app nome visible?{{{2
+if [[ -z $zlfip ]] || [[ -z $zlfport ]] && [[ "$2" != "pre" ]] ;then 
+	echo -e "Please check \033[44;31;1m $1\033[0m visible?";exit 2;fi
+
+#exit 2;
+#if restart,start or shutdown {{{1
+if [[ $3 == "1" ]]
+then 
+	echo -e "\033[31;1mYou will restart\033\0m"
+	if [[ $zlfip == "88.88.88.124" ]];then                               #modify because eln124 no public ip
+		ssh -p 44124 eln107 /web/eln4share/test/new/sshdeploy 1 $zlfport
+	else
+		ssh $zlfip /web/eln4share/test/new/sshdeploy 1 $zlfport; fi
+	if [[ ! -z $zlfip1 ]];then ssh $zlfip1 /web/eln4share/test/new/sshdeploy 1 $zlfport1;fi
+elif [[ $3 == "2" ]]
+then
+	echo "You will start $1"
+	if [[ $zlfip == "88.88.88.124" ]];then                               #modify because eln124 no public ip
+		ssh -p 44124 eln107 /web/eln4share/test/new/sshdeploy 2 $zlfport
+	else
+	ssh $zlfip /web/eln4share/test/new/sshdeploy 2 $zlfport; fi
+	if [[ ! -z $zlfip1 ]];then ssh $zlfip1 /web/eln4share/test/new/sshdeploy 2 $zlfport1;fi
+elif [[ $3 == "3" ]]
+then
+	echo "You will shutdown $1"
+	if [[ $zlfip == "88.88.88.124" ]];then                               #modify because eln124 no public ip
+		ssh -p 44124 eln107 /web/eln4share/test/new/sshdeploy 3 $zlfport
+	else
+	ssh $zlfip /web/eln4share/test/new/sshdeploy 3 $zlfport; fi
+	if [[ ! -z $zlfip1 ]];then ssh $zlfip1 /web/eln4share/test/new/sshdeploy 3 $zlfport1;fi
+elif [[ $3 == "7" ]]
+then
+	echo "Track log $1"
+	if [[ $zlfip == "88.88.88.124" ]];then                               #modify because eln124 no public ip
+		ssh -p 44124 eln107 /web/eln4share/test/new/sshdeploy 7 $zlfport
+	else
+	ssh $zlfip /web/eln4share/test/new/sshdeploy 7 $zlfport; fi
+	if [[ ! -z $zlfip1 ]];then ssh $zlfip1 /web/eln4share/test/new/sshdeploy 7 $zlfport1;fi
+elif [[ $3 == "4" ]]
+then
+	echo "check $1's log"
+	if [[ $zlfip == "88.88.88.124" ]];then                               #modify because eln124 no public ip
+		ssh -p 44124 eln107 /web/eln4share/test/new/logcheck  $zlfport
+	else
+	ssh $zlfip /web/eln4share/test/new/logcheck $zlfport ; fi
+	if [[ ! -z $zlfip1 ]];then ssh $zlfip1 /web/eln4share/test/new/logcheck $zlfport1;fi
+elif [[ $3 == "5" ]]
+then
+	/web/eln4share/test/new/tarcp $1 $2 $4 $5
+elif [[ $3 == "6" ]]
+then
+	echo "Auto deployer"
+		echo `date "+%x %X"`"~~~~~"`who am i`"~~~~~"$1 $2 $4 >> /tmp/sql.t
+        /web/eln4share/test/new/zlfcommandload $1 $2 3 || exit 2
+	sleep 0 && echo -e "\033[34;1mShutdown complete\033[0m"
+	if [[ $2 == "pre" ]]
+	then
+        /web/eln4share/test/new/predeploy $1 $4 || exit 2
+		sleep 2 && echo -e "\033[34;1mDeploy complete\033[0m"
+	else
+		if [[ ! -z $4 ]];then
+    		    /web/eln4share/test/new/zlfcommandload $1 $2 5 $4 $5 || exit 2
+			sleep 2 && echo -e "\033[34;1mDeploy complete\033[0m"
+		else 
+    		    /web/eln4share/test/new/zlfcommandload $1 $2 5 || exit 2
+			sleep 2 && echo -e "\033[34;1mDeploy complete\033[0m"
+		fi
+	fi
+    /web/eln4share/test/new/zlfcommandload $1 $2 2 || exit 2
+	sleep 0 && echo -e "\033[34;1mStart complete\033[0m"
+fi

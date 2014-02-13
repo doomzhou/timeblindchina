@@ -1,0 +1,399 @@
+#!/bin/bash
+#First release by doom 28-june | Second add tomcat's regex |Third add multi port tomcat | fourth add pgsql conn
+#shell name tbctl.sh
+
+#env
+PATH=/db/jdk1.6.0_22/bin:/bin:/usr/local/snmp/sbin:/usr/local/snmp/bin:/usr/kerberos/sbin:/usr/kerberos/bin:/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/opt/pgsql/bin:/usr/local/net-snmp/bin:/opt/pgsql/bin:/usr/local/net-snmp/bin:/root/bin:/web/zlfsoft:/web/zlfbin:/root/bin:
+
+#print help
+if [[ -z $1 ]] || [[ $1 == "help" ]];then #{{{
+	echo -e "\033[31;1mAll Midware collect to this shell\033[32;1m(4th version)\033[0m"
+	echo -e "\033[31;1m--------------------------------------------------------\033[0m"
+	awk 'BEGIN{
+		printf "%-8s%-15s%-15s%-15s\n"," Usage: ","      $1       ","      $2       ","      $3       "
+		printf "%-8s%-15s%-15s%-15s\n","        ","    Midware    "," Target/Action ","   Action      "
+		printf "%-8s%-15s%-15s%-15s\n","        ","               ","               "," ___________   "
+		printf "%-8s%-15s%-15s%-15s\n","        "," ________      "," ________      ","|start/2    |  "
+		printf "%-8s%-15s%-15s%-15s\n","        ","|Tomcat  |**** ","|appcode |**** ","|restart/1  |  "
+		printf "%-8s%-15s%-15s%-15s\n","        "," ˉˉˉˉˉˉˉˉ      "," ˉˉˉˉˉˉˉˉ      ","|shutdown/3 |  "
+		printf "%-8s%-15s%-15s%-15s\n","        ","               ","               ","|logcheck/4*|**"
+		printf "%-8s%-15s%-15s%-15s\n","        ","               ","               ","|logbak/5   |  "
+		printf "%-8s%-15s%-15s%-15s\n","        ","               ","               ","|logtrack/6 |  "
+		printf "%-8s%-15s%-15s%-15s\n","        ","               ","               "," ˉˉˉˉˉˉˉˉˉˉˉ   "
+		printf "%-8s%-15s%-15s%-15s\n","        "," ________      "," _______       "," _______       "
+		printf "%-8s%-15s%-15s%-15s\n","        ","|pgsql   |*****","|ip:port|******","|restart|      "
+		printf "%-8s%-15s%-15s%-15s\n","        "," ˉˉˉˉˉˉˉˉ      "," ˉˉˉˉˉˉˉ  *****","|start  |      "
+		printf "%-8s%-15s%-15s%-15s\n","        "," ________      "," _______       ","|stop   |      "
+		printf "%-8s%-15s%-15s%-15s\n","        ","|haproxy |     ","|restart|      ","|conf   |      "
+		printf "%-8s%-15s%-15s%-15s\n","        ","|nginx   |*    ","|start  |      ","|status |      "
+		printf "%-8s%-15s%-15s%-15s\n","        ","|soa     |***  ","|stop   |      "," ˉˉˉˉˉˉˉ       "
+		printf "%-8s%-15s%-15s%-15s\n","        ","|redis   |*****","|conf   |      ","               "
+		printf "%-8s%-15s%-15s%-15s\n","        ","|activemq|     ","|status |      ","               "
+		printf "%-8s%-15s%-15s%-15s\n","        "," ˉˉˉˉˉˉˉˉ      "," ˉˉˉˉˉˉˉ       ","               "
+		}'
+fi #}}}
+
+function tomcat () { #{{{
+	#appcode is null
+	if [[ -z $1 ]];then echo -e "\033[32;1mI detect these app please choose\033[0m"; awk '{if ($1 == "tomcat") printf $2","}END{print""}' tbc.conf ;exit 2;fi
+	#get target host regex
+	host=`awk -v t=$1 '{if ($1 == "tomcat" && $2 == t) { for (i=4;i<=NF;i++) printf$i" "}}' tbc.conf`;tarhost=(`echo $host | tr , " "`);
+	regex=`awk -v t=$1 '{if ($1 == "tomcat" && $2 == t) {print $3}}' tbc.conf`;
+	if [[ ! -z `echo $regex | grep ","` ]] ;then
+		tarregex=(`echo $regex | tr , " "`);
+		lenregex=${#tarregex[*]};
+		for (( i=0;i<$lenregex;i++ ))
+		do
+				echo $i":"${tarregex[i]}
+		done
+		echo -ne "\033[31;1m$1 has $lenregex port \033[32;1m Choose your port item \033[0m"; read item;
+		regexitem=`expr $lenregex - 1`;
+		if [[ $item =~ [0-$regexitem] ]];then regex=${tarregex[$item]};else echo "Wrong item input exit!";exit 2 ;fi
+	fi
+	if [[ -z ${tarhost[0]} ]];then echo -ne "\033[31;1mNo this tomcat!\033[0m";exit 2 ;fi;
+	len=${#tarhost[*]}
+	for (( i=0;i<$len;i++ ))
+	do
+			echo $i":"${tarhost[i]}
+	done
+	echo -ne "\033[31;1m$1 has $len host \033[32;1mhas Choose your targethost(e.g.:2,3) \033[0m"; read item;
+    if [[ "$item" =~ ^([0-9]{1,2},)*[0-9]{1,2}$ ]]; 
+    then
+       if [[ ! -z `echo $item | awk -v t=$len 'BEGIN{RS=","}{if ($0>=t) print $0}'` ]];then echo -e "\033[31;1mDOES ITEM GREAT THAN TOMC AT INDEX NUM!\033[0m" && exit 2;fi
+    else
+         echo -e "\033[31;1mINPUT ITEM ERROR\033[0m" && exit 2 
+    fi  
+    #generate new array
+    arrtmp=(`echo $item | tr , " "`)
+    lentmp=${#arrtmp[*]}
+    for ((i=0;i<$lentmp;i++))
+    do  
+        arrtarget[$i]=${tarhost[${arrtmp[$i]}]}
+    done
+    len1=${#arrtarget[*]}
+    for ((i=0;i<$len1;i++))
+    do  
+        echo -en "\033[32;1m $i \033[33;1m ${arrtarget[$i]}\n\033[0m"
+    done
+	#action
+	echo -ne "\033[31;1m$1\033[32;1mAccept tomcat action (restart|start|shutdown|logcheck|logbak|logtrack) \033[0m"; read action;if [[ -z $action ]];then echo "No action to tomcat exit 2";exit 2;fi
+    for ((i=0;i<$len1;i++))
+    do  
+        echo -en "\033[32;1m $1 \033[33;1mstart $action\n\033[0m"
+		ssh web@${arrtarget[$i]} "/home/web/bin/tbc 2 $action $regex";
+    done
+} #}}}
+
+function nginx () { #{{{
+	#action nginx
+	#get host
+	nginxhost=`awk '{if ($1 == "nginx" && $2 == "location") print$3 }' tbc.conf`
+	if [[ $1 == "conf" ]];then
+		conffile=`awk -v t=$1 '{if ($1 == "nginx" && $2 == t) { for (i=3;i<=NF;i++) printf$i" "}}' tbc.conf`;tarconf=(`echo $conffile | tr , " "`); 
+		len=${#tarconf[*]}
+		for (( i=0;i<$len;i++ ))
+		do
+				echo $i":"${tarconf[i]}
+		done
+		echo -ne "\033[31;1m$1 has $len config files \033[32;1mhas Choose your targetconfig to vim(e.g.:2,3) \033[0m"; read item;
+    	if [[ "$item" =~ ^([0-9]{1,2},)*[0-9]{1,2}$ ]]; 
+    	then
+    	   if [[ ! -z `echo $item | awk -v t=$len 'BEGIN{RS=","}{if ($0>=t) print $0}'` ]];then echo -e "\033[31;1mDOES ITEM GREAT THAN TOMC AT INDEX NUM!\033[0m" && exit 2;fi
+    	else
+    	     echo -e "\033[31;1mINPUT ITEM ERROR\033[0m" && exit 2 
+    	fi  
+    	#generate new array
+    	arrtmp=(`echo $item | tr , " "`)
+    	lentmp=${#arrtmp[*]}
+    	for ((i=0;i<$lentmp;i++))
+    	do  
+    	    arrtarget[$i]=${tarconf[${arrtmp[$i]}]}
+    	done
+    	len1=${#arrtarget[*]}
+    	for ((i=0;i<$len1;i++))
+    	do  
+			vim scp://root@$nginxhost/${arrtarget[$i]};
+			echo -ne  "\033[32;1m $i \033[33;1m ${arrtarget[$i]}\033[0mDONE\n"
+    	done 
+	else
+		#get binfile
+		nginxbin=`awk '{if ($1 == "nginx" && $2 == "bin") print$3 }' tbc.conf`
+		case $1 in
+			"reload" | "1")
+				ssh root@$nginxhost "$nginxbin -s reload";;
+			"start" | "2")
+				ssh root@$nginxhost "$nginxbin";;
+			"stop" | "3")
+				ssh root@$nginxhost "$nginxbin -s stop";;
+			"status" | "5")
+				#get masterpid
+				nginxmpid=`ssh root@$nginxhost "ps -ef | grep nginx | grep master |grep -v grep " | awk '{print$2}'`
+				nginxwpid=(`ssh root@$nginxhost "ps -ef | grep nginx | grep worker |grep -v grep " | awk '{print$2}'`)
+				if [[ -z $nginxmpid ]] || [[ -z $nginxwpid ]];then 
+					echo -e "\033[31;1mNginx in $nginxhost is not available\033[0m"
+				else
+					echo -e "\033[32;1mNginx Master pid is $nginxmpid & worker pids are ${nginxwpid[*]}\033[0m"
+				fi
+				;;
+			"" )
+				echo -e "\033[31;1m(reload|start|stop|conf|status)\033[0m";;
+		esac
+
+	fi;
+
+} #}}}
+
+function haproxy () { #{{{
+	#action haproxy
+	#get host
+	hahost=`awk '{if ($1 == "ha" && $2 == "location") print$3 }' tbc.conf`
+	#get binfile
+	habin=`awk '{if ($1 == "ha" && $2 == "bin") print$3 }' tbc.conf`
+	conffile=`awk '{if ($1 == "ha" && $2 == "conf") print$3}' tbc.conf`
+	hareload=`awk '{if ($1 == "ha" && $2 == "reload") print$3}' tbc.conf`
+	if [[ $1 == "conf" ]];then
+		conffile=`awk -v t=$1 '{if ($1 == "ha" && $2 == t) { for (i=3;i<=NF;i++) printf$i" "}}' tbc.conf`;tarconf=(`echo $conffile | tr , " "`); 
+		len=${#tarconf[*]}
+		for (( i=0;i<$len;i++ ))
+		do
+				echo $i":"${tarconf[i]}
+		done
+		echo -ne "\033[31;1m$1 has $len config files \033[32;1mhas Choose your targetconfig to vim(e.g.:2,3) \033[0m"; read item;
+    	if [[ "$item" =~ ^([0-9]{1,2},)*[0-9]{1,2}$ ]]; 
+    	then
+    	   if [[ ! -z `echo $item | awk -v t=$len 'BEGIN{RS=","}{if ($0>=t) print $0}'` ]];then echo -e "\033[31;1mDOES ITEM GREAT THAN TOMC AT INDEX NUM!\033[0m" && exit 2;fi
+    	else
+    	     echo -e "\033[31;1mINPUT ITEM ERROR\033[0m" && exit 2 
+    	fi  
+    	#generate new array
+    	arrtmp=(`echo $item | tr , " "`)
+    	lentmp=${#arrtmp[*]}
+    	for ((i=0;i<$lentmp;i++))
+    	do  
+    	    arrtarget[$i]=${tarconf[${arrtmp[$i]}]}
+    	done
+    	len1=${#arrtarget[*]}
+    	for ((i=0;i<$len1;i++))
+    	do  
+			vim scp://root@$hahost/${arrtarget[$i]};
+			echo -ne  "\033[32;1m $i \033[33;1m ${arrtarget[$i]}\033[0mDONE\n"
+		done
+	else
+		case $1 in
+			"reload" | "1")
+				ssh root@$hahost "/bin/bash $hareload";;
+				#echo -e "\033[31;1mI DON'T KNOW WHY!";;
+			"start" | "2")
+				ssh root@$hahost "$habin -f $conffile";;
+			"stop" | "3")
+				ssh root@$hahost "killall haproxy";;
+			"status" | "5")
+				/web/nagios/libexec/check_tcp -H $hahost -p 8909;;
+			"" )
+				echo -e "\033[31;1m(reload|start|stop|conf|status)\033[0m";;
+		esac
+	fi;
+	echo $hahost
+} #}}}
+
+function pgsql () { #{{{
+	#pgsql is null
+	if [[ -z $1 ]];then echo -e "\033[32;1mI detect these PGDATA please choose\033[0m \033[31;1m"; awk '{if ($1 == "pgsql") printf $2" "}END{print""}' tbc.conf ;echo -en "\033[0m" ;exit 2;fi
+	#get PGDATA
+	pgdata=`awk -v t=$1 '{if ($1 == "pgsql" && $2 == t) printf$3}' tbc.conf`
+	pghost=`echo $1 | awk -F ":" '{print$1}'`;pgport=`echo $1 | awk -F ":" '{print$2}'`
+	dbpass='elnBjKojpostgres'
+	if [[ -z $pgdata ]] || [[ -z $pghost ]];then echo -e "\033[32;1mCheck your input host and port contact admin\033[0m";exit 2 ;fi
+	#action
+	case $2 in
+		"restart" | "1")
+			ssh root@$pghost ". /etc/profile && su -m postgres -c '/home/postgres/bin/pg_ctl restart -D $pgdata'";;
+		"start" | "2")
+			ssh root@$pghost ". /etc/profile && su -m postgres -c '/home/postgres/bin/pg_ctl start -D $pgdata'";;
+		"stop" | "3")
+			ssh root@$pghost "su -m postgres -c '/home/postgres/bin/pg_ctl stop -m fast -D $pgdata'";;
+		"conf" | "4")
+			vim scp://postgres@$pghost/$pgdata/postgresql.conf;;
+		"status" | "5")
+			/web/nagios/libexec/check_postgres.pl --dbpass=elnBjKojpostgres -H $pghost -p $pgport --action=connection ;;
+		"conn" | "6")
+			#new connection generate .pgpass
+			echo $pghost:$pgport:*:postgres:$dbpass > ~/.pgpass && chown postgres:postgres ~/.pgpass; chmod 600 ~/.pgpass
+			/opt/pgsql/bin/psql -U postgres -p $pgport -h $pghost
+			rm -rf ~/.pgpass
+		   	;;
+		"longquery" | "7")
+			echo $pghost:$pgport:*:postgres:$dbpass > ~/.pgpass && chown postgres:postgres ~/.pgpass; chmod 600 ~/.pgpass
+			/opt/pgsql/bin/psql -U postgres -p $pgport -h $pghost -c "select datname from pg_database;" postgres
+			echo -ne "\033[32;1mInput your datname from above table \033[0m";read dbname
+			echo -ne "\033[32;1mInput your query string or your /tmp's sql file full-path \033[0m";read query
+			if [[ -z $query ]];then echo -e "\033[31;1mError Input exit\033[0m";exit 2;fi
+			if [[ -z `echo $query |grep "/" ` ]];then 
+				/opt/pgsql/bin/psql -U postgres -p $pgport -h $pghost -c "$query" $dbname >> /tmp/`date "+%H%M%S"`.log 2>&1 &
+			else
+				/opt/pgsql/bin/psql -U postgres -p $pgport -h $pghost -f $query $dbname >> /tmp/`date "+%H%M%S"`.log 2>&1 &
+			fi
+			echo -en "\033[32;1mprocess have already executime backend TYPE ENTER CONTINUE!\033[0m"; read interrupt; rm -rf ~/.pgpass
+			;;
+		"" )
+			echo -e "\033[31;1m(restart|start|stop|conf|status|conn|longquery)\033[0m";;
+	esac
+} #}}}
+
+function soa () { #{{{
+	#get target host 
+	host=`awk '{if ($1 == "soa" && $2 == "location") { for (i=3;i<=NF;i++) printf$i" "}}' tbc.conf`;tarhost=(`echo $host | tr , " "`);
+	len=${#tarhost[*]}
+	for (( i=0;i<$len;i++ ))
+	do
+			echo $i":"${tarhost[i]}
+	done
+	echo -ne "\033[31;1mSOA_HOST has $len host \033[32;1mhas Choose your targethost(e.g.:2,3) \033[0m"; read item;
+    if [[ "$item" =~ ^([0-9]{1,2},)*[0-9]{1,2}$ ]]; 
+    then
+       if [[ ! -z `echo $item | awk -v t=$len 'BEGIN{RS=","}{if ($0>=t) print $0}'` ]];then echo -e "\033[31;1mDOES ITEM GREAT THAN TOMC AT INDEX NUM!\033[0m" && exit 2;fi
+    else
+         echo -e "\033[31;1mINPUT ITEM ERROR\033[0m" && exit 2 
+    fi  
+    #generate new array
+    arrtmp=(`echo $item | tr , " "`)
+    lentmp=${#arrtmp[*]}
+    for ((i=0;i<$lentmp;i++))
+    do  
+        arrtarget[$i]=${tarhost[${arrtmp[$i]}]}
+    done
+    len1=${#arrtarget[*]}
+    for ((i=0;i<$len1;i++))
+    do  
+        echo -en "\033[32;1m $i \033[33;1m ${arrtarget[$i]}\n\033[0m"
+    done
+	#action
+	bin=`awk '{if ($1 == "soa" && $2 == "bin") print$3 }' tbc.conf`
+	echo -ne "\033[31;1m$1\033[32;1mAccept tomcat action (start|stop|status|conf) \033[0m"; read action;if [[ -z $action ]];then echo "No action to SOA exit 2";exit 2;fi
+	case $action in
+		"conf" | "4")
+    		echo -en "\033[32;1mCODING SOON $action\n\033[0m";;
+		"stop" | "3")
+    		for ((i=0;i<$len1;i++))
+    		do  
+				pid=`ssh web@${arrtarget[$i]} "ps -ef | grep zoo.cfg | grep -v grep" | awk '{print$2}'`;
+				ssh web@${arrtarget[$i]} "kill -term $pid"
+    		done;;
+		"start" | "2")
+    		for ((i=0;i<$len1;i++))
+    		do  
+				ssh web@${arrtarget[$i]} "cd /web/soa/registry/;nohup $bin &";
+    		done;;
+		"status" | "1")
+    		for ((i=0;i<$len1;i++))
+    		do  
+				pid=`ssh web@${arrtarget[$i]} "ps -ef | grep zoo.cfg | grep -v grep" | awk '{print$2}'`;
+				if [[ ! -z $pid ]];then echo -e "\033[32;1m${arrtarget[$i]}'SOA available\033[0m";fi;
+    		done;;
+			"" )
+				echo -e "\033[31;1m(status|start|stop|conf)\033[0m";;
+	esac
+
+} #}}}
+
+function redis () { #{{{
+	#get host
+	redishost=`awk '{if ($1 == "redis" && $2 == "location") print$3 }' tbc.conf`
+	confdir=`awk '{if ($1 == "redis" && $2 == "dir") { for (i=3;i<=NF;i++) printf$i" "}}' tbc.conf`;tarconf=(`echo $confdir | tr , " "`); 
+	len=${#tarconf[*]}
+	for (( i=0;i<$len;i++ ))
+	do
+			echo $i":"${tarconf[i]}
+	done
+	echo -ne "\033[31;1m$1 has $len config files \033[32;1mhas Choose your targetconfig to vim(e.g.:2,3) \033[0m"; read item;
+    if [[ "$item" =~ ^([0-9]{1,2},)*[0-9]{1,2}$ ]]; 
+    then
+       if [[ ! -z `echo $item | awk -v t=$len 'BEGIN{RS=","}{if ($0>=t) print $0}'` ]];then echo -e "\033[31;1mDOES ITEM GREAT THAN TOMCAT INDEX NUM!\033[0m" && exit 2;fi
+    else
+         echo -e "\033[31;1mINPUT ITEM ERROR\033[0m" && exit 2 
+    fi  
+    #generate new array
+    arrtmp=(`echo $item | tr , " "`)
+    lentmp=${#arrtmp[*]}
+    for ((i=0;i<$lentmp;i++))
+    do  
+        arrtarget[$i]=${tarconf[${arrtmp[$i]}]}
+    done
+   	len1=${#arrtarget[*]}
+	case $1 in
+		"conf" | "4")
+    		for ((i=0;i<$len1;i++))
+    		do  
+				vim scp://web@$redishost/${arrtarget[$i]}/redis.conf;
+				echo -ne  "\033[32;1m $i \033[33;1m ${arrtarget[$i]}\033[0mDONE\n"
+    		done ;;
+		"stop" | "3")
+    		for ((i=0;i<$len1;i++))
+    		do  
+				redisport=`ssh web@$redishost "sed -n 's/^port\([0-9]*\)/\1/p' ${arrtarget[$i]}redis.conf"`
+				echo $redisport
+				ssh web@$redishost "${arrtarget[$i]}src/redis-cli -p $redisport shutdown"
+				echo -ne  "\033[32;1m $i \033[33;1m ${arrtarget[$i]}\033[0mDONE\n"
+    		done ;;
+		"start" | "2")
+    		for ((i=0;i<$len1;i++))
+    		do  
+				ssh web@$redishost "${arrtarget[$i]}src/redis-server ${arrtarget[$i]}redis.conf"
+    		done ;;
+		"status" | "1")
+				pid=`ssh web@$redishost "ps -ef | grep redis-server | grep -v grep" | awk '{print$2}'`;
+				if [[ ! -z $pid ]];then echo  "redis's pid `echo $pid | sed 's/$/ /g'`"; echo -e "\033[32;1m$redishost's SOA available\033[0m";fi ;;
+			"" )
+				echo -e "\033[31;1m(status|start|stop|conf)\033[0m";;
+	esac
+} #}}}
+
+function slony () { #{{{
+	echo slony
+	echo -e "\033[32;1mCODING SOON\033[0m"	
+} #}}}
+
+function activemq () { #{{{
+	#get host
+	mqhost=`awk '{if ($1 == "activemq" && $2 == "location") print$3 }' tbc.conf`
+	mqdir=`awk '{if ($1 == "activemq" && $2 == "dir") print$3 }' tbc.conf`
+	case $1 in 
+		"status" | "1")
+			pid=`ssh web@$mqhost "ps -ef | grep -v grep | grep activemq" | awk '{printf"ACTIVEMQ pid"$2}'` 
+			if [[ ! -z $pid ]];then echo  "activemq's pid `echo $pid`"; echo -e "\033[32;1m$mqhost's Activemq available\033[0m";fi ;;
+		"stop" | "3")
+			pid=`ssh web@$mqhost "ps -ef | grep -v grep | grep activemq" | awk '{printf$2}'` 
+			ssh web@$mqhost "kill -term $pid" ;;
+		"start" | "2")
+			mqdir=`awk '{if ($1 == "activemq" && $2 == "dir") print$3 }' tbc.conf`
+			ssh web@$mqhost "rm -rf $mqdir/data/*.pid $mqdir/data/*.log" 
+			ssh web@$mqhost "${mqdir}bin/activemq start &"
+			;;
+		"conf" | "4")
+			vim scp://web@$mqhost/${mqdir}/conf/activemq.xml;;
+		"" )
+			echo -e "\033[31;1m(status|start|stop|conf)\033[0m";;
+	esac
+} #}}}
+
+case $1 in #{{{
+		"tomcat" | "1")
+			tomcat $2;;
+		"nginx" | "2")
+			nginx $2;;
+		"ha" | "3")
+			haproxy $2;;
+		"pgsql" | "4")
+			pgsql $2 $3;;
+		"soa" | "5")
+			soa;;
+		"redis" | "6")
+			redis $2;;
+		"slony" | "7")
+			slony;;
+		"activemq" | "8")
+			activemq $2;;
+		"nagios" | "9")
+			/web/nagios/libexec/check_multi -r 1 -f /web/nagios/etc/MAJ_product/multi_cmd/Forwechat.cmd 
+			;;
+esac #}}}

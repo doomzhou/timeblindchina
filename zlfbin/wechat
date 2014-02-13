@@ -1,0 +1,119 @@
+#!/bin/bash
+#First release
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/web/nagios/libexec/:/web/zlfbin
+LANG=zh_CN.UTF-8
+export LANG PATH
+function weather(){   #{{{
+	#just judge home or shanghai
+	WEATHER_URL='http://www.weather.com.cn/weather/101020100.shtml'
+	city="SH"
+	
+	TMP_FILE='weather_html'
+	cd /tmp
+	wget -t 6 -w 6 -T 6 $WEATHER_URL -O ${TMP_FILE} >/dev/null 2>&1 
+	dos2unix ${TMP_FILE} >/dev/null 2>&1 
+	cat weather_html | sed -e :a -e 's/<[^>]*>//g;/</N;//ba' | sed '/^[[:space:]]*$/d' | sed 's/[[:space:]]//g' | sed '/^[a-zA-Z]/d' | sed '/[{/}/;]/d' | grep "查看未来4-7天天气预报" -A 78 > temp.t
+	echo $city > message
+	for ((i=0;i<7;i++))
+	do
+		t=`date -d "+$i day" "+%w"`
+		if (( $t == 1 )) ; then t=星期一;elif (( $t == 2 ));then t=星期二;elif (( $t == 3 ));then t=星期三;elif (( $t == 4 ));then t=星期四;elif (( $t == 5 ));then t=星期五;elif (( $t == 6 ));then t=星期六;elif (( $t == 0 ));then t=星期日;fi
+		day[$i]=`date --date="+$i day" "+%-d"日``echo $t`
+		if [ $i == 0 ]
+		then
+		cat temp.t | grep "${day[$i]}" -A 10 | awk 'BEGIN{ORS=" "}1' | awk '{if ($7!="夜间"){printf("%s 白天%s%s的%s,%s\n",$1,$3,$6,$5,$4)} else {printf("%s 白天%s%s的%s,夜间%s%s的%s,%s-%s\n",$1,$3,$6,$5,$8,$11,$10,$9,$4)}}' >> message
+		elif [ $i == 6 ] 
+		then
+		cat temp.t | grep "${day[$i]}" -A 10 | awk 'BEGIN{ORS=" "}1' | awk '{if ($7==""){printf("%s 白天%s%s的%s,%s\n",$1,$3,$6,$5,$4)} else {printf("%s 白天%s%s的%s,夜间%s%s的%s,%s-%s\n",$1,$3,$6,$5,$8,$11,$10,$9,$4)}}' >> message
+		else
+		cat temp.t | grep "${day[$i]}" -A 10 | awk 'BEGIN{ORS=" "}1' | awk '{printf("%s 白天%s%s的%s,夜间%s%s的%s,%s-%s\n",$1,$3,$6,$5,$8,$11,$10,$9,$4)}' >> message
+		fi	
+	done
+	cat /tmp/message
+	rm -rf ${TMP_FILE}
+	rm temp.t message
+}  #}}}
+function fun() {    #{{{
+	cd /web/zlfbin 
+	if [[ ! -f fun.cfg ]];then echo "no cfgfile"; exit 2 ; fi;
+	jokedomain=`cat fun.cfg`
+	FILE="index.html"
+	mkdir -p /tmp/joke;cd /tmp/joke;
+	wget -t 6 -w 6 -T 6 $jokedomain -O ${FILE} > /dev/null 2>&1
+	if [[ ! -f ${FILE} ]];then exit 2;fi;
+	dos2unix ${FILE} > /dev/null 2>&1
+	iconv -f gb2312 -t utf-8 ${FILE} > t 
+	sed  -n '/endtext/,/<\/div>/{/endtext/n;p}' t > tt
+	sed -i -ne 's/<[^>]*>//gp' -ne '/^[[:space:]]*$/d' tt
+	sed -i -e 's@\&[lr]dquo;@"@g' -e 's@&hellip;@...@g' tt
+	cat tt > message
+	
+	#conf
+	next=`sed -n 's@var nextpage=\"\(.*[a-zA-Z0-9].*\)\"@http://www.haha365.com\1@gp' ${FILE}`
+	if [[ ! -z $next ]];then
+		echo $next > /web/zlfbin/fun.cfg;
+	fi
+	
+	cat message
+	rm -rf /tmp/joke
+}   #}}}
+function news() {  #{{{
+	newdomain="http://news.sohu.com/"
+	FAT_FILE="news.html"
+	mkdir -p /tmp/new;cd /tmp/new;
+	wget -t 3 -w 30 -T 30 $newdomain -O ${FAT_FILE} 1>/dev/null 2>&1 
+	perl -MEncode -ne 'print encode("utf8",decode("gb2312",$_))' ${FAT_FILE} > new.html
+	#get target news's url
+	dos2unix new.html 1>/dev/null 2>&1 
+	#handle the file
+	title="enjoy sohu news  (more news click LOL just a joke it can not click) test version"
+	echo `date -d "today" "+%x "` > message
+	echo $title >> message
+	awk -v RS="今日热闻" 'NR==2{print$0}' new.html | awk 'NR<11{print$0}'  | sed -e :a -e 's/<[^>]*>//g;/</N;//ba' |  sed -e :a -e 's/{[^}]*}//g;/{/N;//ba' | sed '/^[[:space:]]*$/d' | sed '/class/d' | sed 's/&nbsp//g' | sed 's/^[[:space:]]*//g' |sed '/^[((a-zA-Z)|#|.|/|;|*|－ |}|{)]/d' >> message
+
+	cat /tmp/new/message
+	rm -rf /tmp/new
+} #}}}
+
+function eln4() {  #{{{
+	case $1 in
+		"all" )
+			if [[ -f /tmp/wechatstats.t ]];then
+				cat /tmp/wechatstats.t | awk -F : 'NR==1{print$0}' 
+				rm -rf  /tmp/wechatstats.t
+			else
+				echo "stats generating ten sesconds get report!"
+				/web/nagios/libexec/check_multi -r 1 -f /web/nagios/etc/MAJ_product/multi_cmd/Forwechat.cmd > /tmp/wechatstats.t &
+			fi
+			;;
+		"load" )
+			/web/zlfbin/wechatsh/pdsh -R exec -w eln[101-127] ssh root@%h "uptime" | awk '{print$1" "$(NF-2)}' | sort -nrk2 | head -5 
+			;;
+		"" )
+			NUMHOSTS=`/web/nagios/bin/nagiostats -m -d NUMHOSTS`
+			NUMSERVICES=`/web/nagios/bin/nagiostats -m -d NUMSERVICES`
+			NUMSVCOK=`/web/nagios/bin/nagiostats -m -d NUMSVCOK`
+			NUMSVCPROB=`/web/nagios/bin/nagiostats -m -d NUMSVCPROB`
+			NUMHSTUP=`/web/nagios/bin/nagiostats -m -d NUMHSTUP`
+			NUMHSTPROB=`/web/nagios/bin/nagiostats -m -d NUMHSTPROB`
+			echo "eln4 has ${NUMHOSTS} hosts $NUMSERVICES services. $NUMSVCOK services status OK! $NUMSVCPROB services status PROBLEM!  $NUMHSTUP hosts status OK! $NUMHSTPROB hosts status PROBLEM!"
+		;;
+	esac
+}  #}}}
+
+case $1 in #{{{
+	"fun" | "Fun" )
+		fun;;
+	"weather" | "Weather")
+		weather;;
+	"news" | "News")
+		news;;
+	"dic" )
+		/usr/local/bin/python3 /web/zlfbin/ydcv $2;;
+	"test" )
+		echo "zlf \\n doom";;
+	"eln" | "eln" )
+		eln4 $2;;
+	"" )
+		echo "(fun|weather|news|dic |eln4)";;
+esac #}}}

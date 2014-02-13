@@ -1,0 +1,32 @@
+#!/bin/bash
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/web/nagios/libexec/
+#wget the handled file{{{1
+newdomain="http://news.sohu.com/"
+FAT_FILE="news.html"
+mkdir -p /tmp/new;cd /tmp/new;
+wget -t 3 -w 30 -T 30 $newdomain -O ${FAT_FILE}
+perl -MEncode -ne 'print encode("utf8",decode("gb2312",$_))' ${FAT_FILE} > new.html
+#get target news's url{{{2
+dos2unix new.html
+#handle the file{{{1
+title="enjoy sohu news  (more news click LOL just a joke it can not click) test version"
+echo `date -d "today" "+%x "` > message
+echo $title >> message
+awk -v RS="今日热闻" 'NR==2{print$0}' new.html | awk 'NR<11{print$0}'  | sed -e :a -e 's/<[^>]*>//g;/</N;//ba' |  sed -e :a -e 's/{[^}]*}//g;/{/N;//ba' | sed '/^[[:space:]]*$/d' | sed '/class/d' | sed 's/&nbsp//g' | sed 's/^[[:space:]]*//g' |sed '/^[((a-zA-Z)|#|.|/|;|*|－ |}|{)]/d' >> message
+#send {{{1
+targetfetionaddress="15221556659"
+if [[ -z $1 ]] ;then
+	targetfetionaddress="15221556659"
+elif [[ $1 == "all" ]] ;then
+	targetfetionaddress="13735454614,15901644628,15221556659"
+elif [[ $1 == "li" ]] ;then
+	targetfetionaddress="15901644628"
+elif [[ $1 == "wu" ]] ;then
+	targetfetionaddress="13735454614"
+elif [[ $1 == "sister" ]] ;then
+	targetfetionaddress="13819016820"
+fi
+
+#/web/nagios/libexec/fetion --mobile=15221556659 --pwd=1qazxsw2 --to=$targetfetionaddress --msg-type=1 --file-utf8=/tmp/new/message
+cat /tmp/new/message
+rm -rf /tmp/new

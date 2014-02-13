@@ -1,0 +1,35 @@
+#!/bin/bash
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/web/nagios/libexec/
+LANG=zh_CN.UTF-8
+export LANG
+export PATH
+WEATHER_URL='http://www.weather.com.cn/weather/101120101.shtml'
+TMP_FILE='weather_html'
+cd /tmp
+city="The weather of jinan Shandong tag=temp"
+wget -t 3 -w 30 -T 30 $WEATHER_URL -O ${TMP_FILE}
+dos2unix ${TMP_FILE}
+#cat weather_html | sed -e :a -e 's/<[^>]*>//g;/</N;//ba' | sed '/^[[:space:]]*$/d' | sed 's/[[:space:]]//g' | sed '/^[a-Z]/d' | sed '/[{/}/;]/d' | grep "查看未来4-7天天气预报" -A 78 | awk 'BEGIN{ORS=" "}1'> temp.t
+cat weather_html | sed -e :a -e 's/<[^>]*>//g;/</N;//ba' | sed '/^[[:space:]]*$/d' | sed 's/[[:space:]]//g' | sed '/^[a-Z]/d' | sed '/[{/}/;]/d' | grep "查看未来4-7天天气预报" -A 78 > temp.t
+echo $city > message
+	#for ((i=0;i<7;i++))
+	#do
+	#	#arr[$i]=`awk -v t=${i} '{printf("%s 白天%s%s的%s,夜间%s%s的%s,%s-%s--->\n",$(8+11*t),$(10+11*t),$(13+11*t),$(12+11*t),$(15+11*t),$(18+11*t),$(17+11*t),$(16+11*t),$(11+11*t))}' temp.t`
+	#	awk -v t=${i} '{printf("%s 白天%s%s的%s,夜间%s%s的%s,%s-%s\n",$(8+11*t),$(10+11*t),$(13+11*t),$(12+11*t),$(15+11*t),$(18+11*t),$(17+11*t),$(16+11*t),$(11+11*t))}' temp.t >> message
+	#done
+for ((i=0;i<7;i++))
+do
+	day[$i]=`date --date="+$i day" "+%-d"日`
+	if [ $i == 0 ]
+	then
+	cat temp.t | grep "${day[$i]}" -A 10 | awk 'BEGIN{ORS=" "}1' | awk '{if ($7!="夜间"){printf("%s 白天%s%s的%s,%s\n",$1,$3,$6,$5,$4)} else {printf("%s 白天%s%s的%s,夜间%s%s的%s,%s-%s\n",$1,$3,$6,$5,$8,$11,$10,$9,$4)}}' >> message
+	elif [ $i == 6 ] 
+	then
+	cat temp.t | grep "${day[$i]}" -A 10 | awk 'BEGIN{ORS=" "}1' | awk '{if ($7==""){printf("%s 晚上%s%s的%s,%s\n",$1,$3,$6,$5,$4)} else {printf("%s 白天%s%s的%s,夜间%s%s的%s,%s-%s\n",$1,$3,$6,$5,$8,$11,$10,$9,$4)}}' >> message
+	else
+	cat temp.t | grep "${day[$i]}" -A 10 | awk 'BEGIN{ORS=" "}1' | awk '{printf("%s 白天%s%s的%s,夜间%s%s的%s,%s-%s\n",$1,$3,$6,$5,$8,$11,$10,$9,$4)}' >> message
+	fi	
+done
+fetion --mobile=15221556659 --pwd=1qazxsw2 --to=15221556659 --msg-type=1 --file-utf8=/tmp/message
+rm -rf ${TMP_FILE}
+rm temp.t message

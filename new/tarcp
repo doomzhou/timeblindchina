@@ -1,0 +1,89 @@
+#!/bin/bash
+echo $4
+#read all env {{{1
+#LAST RELEASE:fix deploytmp web:web
+source /etc/profile
+source ~/.bash_profile
+#overridedir="/web/eln4share/test/override"
+workdir="/web/eln4share/test/new"
+overridedir2="/web/eln4share/test/new/override2"
+overridedir3="/web/eln4share/test/new/override3"
+#pre_release="/web/eln4share/test/new/overridepre"
+#choose environment{{{1
+chown web:web /tmp/deploytmp
+
+#Judge sf-server
+if [[ "$1" = "sf-web" ]]; then args1="sf-server";fi;
+#add change none "web"'s app to "web"{{{2
+if [[ ! -z `echo $1 | awk /-web/` ]]; then
+	if [[ -z $args1 ]]; then    # judge sf-web
+		args1=`echo $1 | sed 's/-web//g'`
+	fi
+else 
+	args1=$1 
+fi
+
+if [[ -z $1 ]] || [[ -z $2 ]]; then 
+	echo -e "Please Input An Appname and environment(\033[44;31;1meg.btm 2\033[0m)";exit 2
+else
+	if [[ ! -z `echo $1 | awk /-svc/` ]]; then
+		if [[ $2 == "2" ]]; then 
+			targetdir="/web/eln4share/test2/svc" 		
+		elif [[ $2 == "3" ]]; then
+			targetdir="/web/eln4share/test3/svc" 		
+			#echo -e "No this enviroment(\033[44;32;1mtest3 not for allow!\033[0m)";exit 2 
+		else 
+			echo -e "No this enviroment(\033[44;31;1mcheck\033[0m)";exit 2 
+		fi
+	else
+		if [[ $2 == "2" ]]; then 
+			targetdir="/web/eln4share/test2" 		
+		elif [[ $2 == "3" ]]; then
+			targetdir="/web/eln4share/test3" 		
+			#echo -e "No this enviroment(\033[44;32;1mtest3 not for allow!\033[0m)";exit 2 
+		else 
+			echo -e "No this enviroment(\033[44;31;1mcheck\033[0m)";exit 2 
+		fi
+	fi 
+fi
+
+#get three parameter
+g=`awk -F "\"" /\"$args1\"/'{printf("%s"),$4}' $workdir/projects.xml`
+a=`awk -F "\"" /\"$args1\"/'{printf("%s"),$2}' $workdir/projects.xml`
+v=`awk -F "\"" /\"$args1\"/'{printf("%s"),$6}' $workdir/projects.xml`
+
+#new feature
+
+if [[ $3 =~ [0-9]\.[0-9]\.[0-9] ]] ;then v=$3"-SNAPSHOT";fi; 
+
+uuid=`uuidgen`
+tmp="/tmp/deploytmp/$uuid"
+
+nexusurl="http://192.168.0.211:8080/nexus/service/local/artifact/maven/redirect?r=snapshots&g=$g&a=$a&v=$v&e=war"
+mkdir -p $tmp ; cd $tmp
+wget $nexusurl ; if [[ ! $? -eq 0 ]];then echo -e "\033[32;1merror app or error version!! exit 2\033[0m"; exit 2 ;fi
+jar xf $a*war
+#mv $a*war ../
+rm -f $a*war
+
+if [[ $2 == "2" ]];then
+	/bin/cp -r $overridedir2/* $tmp/WEB-INF/classes && echo -e "\033[44;32;1m/bin/cp -r $overridedir2/* $tmp/WEB-INF/classes\033[0m"
+    sed -i "s/@.*@/$a/g" $tmp/WEB-INF/classes/log4j.properties
+elif [[ "$2" == "3" ]];then
+	/bin/cp -r $overridedir3/* $tmp/WEB-INF/classes && echo -e "\033[44;32;1m/bin/cp -r $overridedir3/* $tmp/WEB-INF/classes\033[0m"
+    sed -i "s/@.*@/$a/g" $tmp/WEB-INF/classes/log4j.properties
+fi
+#echo -n "$targetdir y/n " 
+#read input; if [[ $input == "y" ]]; then echo -e "\033[44;32;1mgogogo......\033[0m"; else echo -e "\033[44;32;1mSir interrupt......\033[0m";exit 2;fi
+find $targetdir/$a/* | grep -E "*.class|*.jar" | xargs rm -rf && echo -e "\033[42;34;1m$targetdir/$a/* class,jar delete ok\033[0m";
+
+if [[ "$3" == "all" ]] || [[ "$4" == "all" ]];
+then
+	/bin/cp -r ./* $targetdir/$a/ && echo -e "copy all files \033[32;1m$a\033[0m"
+else
+	/bin/cp -r default $targetdir/$a/ && echo "/bin/cp -r default $targetdir/$a"
+	/bin/cp -r common $targetdir/$a/ && echo "/bin/cp -r common $targetdir/$a"
+	/bin/cp -r WEB-INF $targetdir/$a/ && echo "/bin/cp -r WEB-INF $targetdir/$a"
+fi
+
+rm -rf $tmp

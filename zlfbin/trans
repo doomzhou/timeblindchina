@@ -1,0 +1,23 @@
+#!/bin/bash
+#first release by doom 7/04/2013
+PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/web/nagios/libexec/
+LANG=zh_CN.UTF-8
+export LANG
+export PATH
+
+tag=1
+while [[ "$tag" -eq 1 ]]
+do
+	echo -ne "\033[33;1mtype a word for translate or quit\033[0m"
+	read word;
+	case "$word" in 
+		"quit")
+			echo -e "\033[31;1mBye!!\033[0m" ;exit 2;;
+		[a-zA-z]*)
+			echo $word
+			ydcv "$word"
+			echo;echo;;
+		"")
+			tag=1;
+	esac
+done

@@ -1,0 +1,15 @@
+#!/bin/bash
+#PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/local/nagios/libexec/
+if [[ -z "$1" ]]
+then echo "NO MESSAGE INPUT";exit 2;
+else
+	if [[ -z "$2" ]]	
+	then echo -n "15221556659 OR INPUT ";read num;
+		if [[ -z "$num" ]]	
+		then /web/nagios/libexec/fetion --mobile=15221556659 --pwd=1qazxsw2 --to=15221556659 --msg-type=1 --msg-utf8="$1";
+		else /web/nagios/libexec/fetion --mobile=15221556659 --pwd=1qazxsw2 --to=$num --msg-type=1 --msg-utf8="$1";
+		fi
+	else /web/nagios/libexec/fetion --mobile=15221556659 --pwd=1qazxsw2 --to=$2 --msg-type=1 --msg-utf8="$1";
+	fi
+fi
+

@@ -1,0 +1,78 @@
+#!/bin/bash 
+#First release 26/3/2013 by doom 
+PATH=/usr/lib/qt4/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/bin/core_perl:/home/doom/bin:/web/zlfsoft:/web/zlfbin:/home/doom/bin:/web/zlfsoft:/web/zlfbin:/home/doom/bin:/web/zlfsoft:/web/zlfbin:
+export PATH
+#if [[ "$1" = "rdt196" ]];
+#then
+#	rdesktop -f 192.168.0.196:3389 -u administrator -p tbc
+#elif [[ "$1" = "sshdoom" ]];
+#then
+#	ssh root@doom
+#fi
+case "$1" in
+	"rdt")
+		case "$2" in
+			"pub")
+				rdesktop -f 123.103.97.53:3389 -u OFFICE -p 21tbv4_OFFICE;;
+			"pub1")
+				rdesktop -f 117.79.157.107:3389 -u OFFICE -p 21tbv4_OFFICE;;
+			"local")
+				rdesktop -f 192.168.0.224:3389 -u administrator -p eln4Develop;;
+			"225")
+				rdesktop -f 192.168.0.225:6222 -u server -p 1qazxsw2;;
+			"zyd")
+				rdesktop -f 121.14.255.26:15907 -u administrator -p Zyd@trn01;;
+			"")
+				echo -e "rdesktop \033[31;1m(Xp|Local|pub)\033[0m";;
+		esac;;
+	"ssh")
+		echo -e "\n\033[42;37;1mwget 10.0.1.114/rm_whatever.t > /dev/null 2>&1 && source rm_whatever.t && rm -rf rm_whatever.t\033[0m\n"
+		echo -ne "\033[41;37;1mplease choose the user:\033[0m"
+		read user
+		#generate port
+		port="55"`echo $2 | sed -n 's/eln//gp'`
+		if [[ -z "$user" ]];then
+			ssh -p $port web@eln114
+		else
+			case "$2" in
+				"lvm")
+					ssh root@192.168.1.136;;
+				*)
+					ssh -p $port $user@eln114;;
+				"")
+					echo -e "ssh \033[31;1m(doom|oracle)\033[0m";;
+			esac
+		fi;;
+	"qq")
+		/opt/longene/qq/qq.sh;;	
+	"tz")
+		cd /home/doom/app/rmoon/
+		java -jar rmoon.jar;;	
+	"navicat")
+		/home/doom/app/navicat110_premium_en/start_navicat;;	
+	"wps")
+		/opt/wps/wps;;	
+	"scpi")
+		echo -ne "\033[41;37;1mplease choose the user:\033[0m"
+		read user
+		iconv -f gb2312 -t utf-8 $2 > ${2}.iconv
+		if [[ -z "$user" ]];then
+			scp -r ${2}.iconv web@$3:/tmp
+		else
+			scp -r ${2}.iconv $user@$3:/tmp
+		fi;;
+	"scp")
+		echo -ne "\033[41;37;1mplease choose the user:\033[0m"
+		read user
+		#generate port
+		port="55"`echo $3 | sed -n 's/eln//gp'`
+		if [[ -z "$user" ]];then
+			scp -P $port -r $2 web@eln114:/tmp
+		else
+			scp -P $port -r $2 $user@eln114:/tmp
+		fi;;
+	"")	
+		echo -e "parameter  \033[42;37;1m(rdt|ssh|navicat)\033[0m";;
+esac
+				 
+	

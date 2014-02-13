@@ -1,0 +1,24 @@
+#!/bin/bash
+#wget the handled file{{{1
+cd /web/zlfbin
+if [[ ! -f fun.cfg ]];then echo "no cfgfile"; exit 2 ; fi;
+jokedomain=`cat fun.cfg`
+FILE="index.html"
+mkdir -p /tmp/joke;cd /tmp/joke;
+wget -t 6 -w 6 -T 6 $jokedomain -O ${FILE} > /dev/null 2>&1
+if [[ ! -f ${FILE} ]];then exit 2;fi;
+dos2unix ${FILE} > /dev/null 2>&1
+iconv -f gb2312 -t utf-8 ${FILE} > t 
+sed  -n '/endtext/,/<\/div>/{/endtext/n;p}' t > tt
+sed -i -ne 's/<[^>]*>//gp' -ne '/^[[:space:]]*$/d' tt
+sed -i -e 's@\&[lr]dquo;@"@g' -e 's@&hellip;@...@g' tt
+cat tt > message
+
+#conf
+next=`sed -n 's@var nextpage=\"\(.*[a-zA-Z0-9].*\)\"@http://www.haha365.com\1@gp' ${FILE}`
+if [[ ! -z $next ]];then
+	echo $next > /web/zlfbin/fun.cfg;
+fi
+
+cat message
+rm -rf /tmp/joke

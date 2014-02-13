@@ -1,0 +1,17 @@
+#!/bin/bash
+#First release by doom 27 Nov 2013 
+
+#set variable
+PATH=/usr/local/bin:$PATH
+export $PATH
+
+result=`redis-cli -h 10.0.1.106 -p 6380 keys 'elnSessionId.*' |wc -l`
+
+#done
+if [[ ! $result -eq 0 ]] ;then 
+	echo "OK status  Visible Online <font size="14" color="red">$result</font>"
+	exit 1;
+else
+	echo "Really zero? $result";
+	exit 0;
+fi

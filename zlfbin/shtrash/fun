@@ -1,0 +1,35 @@
+#!/bin/bash
+#wget the handled file{{{1
+cd /web/zlfbin
+alarm='/web/nagios/libexec/fetion --mobile=15221556659 --pwd=1qazxsw2 --to=15221556659 --msg-type=1 --msg-utf8="PLEASE_CHECK_FUN.CFG"'
+if [[ ! -f fun.cfg ]];then $alarm ;exit 2 ; fi;
+jokedomain=`cat fun.cfg`
+FILE="index.htm"
+mkdir -p /tmp/joke;cd /tmp/joke;
+wget -t 3 -w 30 -T 30 $jokedomain -O ${FILE}
+dos2unix ${FILE}
+iconv -f gb2312 -t utf-8 ${FILE} > t
+sed  -n '/endtext/,/<\/div>/{/endtext/n;p}' t > tt
+sed -i -ne 's/<[^>]*>//gp' -ne '/^[[:space:]]*$/d' tt
+sed -i -e 's@\&[lr]dquo;@"@g' -e 's@&hellip;@...@g'  tt
+cat tt > message
+
+#conf
+sed -n 's@.*href=\"\(\/.*\)\">上←篇.*@http://www.haha365.com\1@gp' t > /web/zlfbin/fun.cfg
+#send {{{1
+targetfetionaddress="15221556659"
+if [[ -z $1 ]] ;then
+	targetfetionaddress="15221556659"
+elif [[ $1 == "all" ]] ;then
+	targetfetionaddress="15221556659,13819016820,13735454614,15901644628"
+elif [[ $1 == "qian" ]] ;then
+	targetfetionaddress="15901644628"
+elif [[ $1 == "wu" ]] ;then
+	targetfetionaddress="13735454614"
+elif [[ $1 == "sister" ]] ;then
+	targetfetionaddress="13819016820"
+fi
+
+/web/nagios/libexec/fetion --mobile=15221556659 --pwd=1qazxsw2 --to=$targetfetionaddress --msg-type=1 --file-utf8=/tmp/joke/message
+#cat message
+rm -rf /tmp/joke

@@ -1,0 +1,16 @@
+#!/bin/bash
+#First release by doom 15 may 2013 
+
+#set variable
+targetdir="/web/eln4share/bbs/coopdata/"
+targets=`find $targetdir * -maxdepth 1`
+arrdir=($targets)
+len=${#arrdir[*]}
+echo $len
+for ((i=0;i<$len;i++))
+do
+	if [[ -r ${arrdir[$i]} ]] || [[ -w ${arrdir[$i]} ]] || [[ -x ${arrdir[$i]} ]]
+	then 
+		exit 2
+	fi;
+done

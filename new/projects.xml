@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projects xmlns="http://tbc.com/pdt/projects/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<name>test2&3</name>
+	<defaultVersion>4.0.0-SNAPSHOT</defaultVersion>
+	<mavenUrl>http://192.168.0.211:8080/nexus/service/local/artifact/maven/redirect</mavenUrl>
+	<!-- 所有web工程 -->
+	<project name="af" groupId="com.tbc.paas.af" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="anv" groupId="com.tbc.paas.anv" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="autogen-login" groupId="com.tbc.framework.autogen" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="btm" groupId="com.tbc.app.btm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="bdr" groupId="com.tbc.app.bdr" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="bol" groupId="com.tbc.app.bol" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cal" groupId="com.tbc.app.cal" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cl" groupId="com.tbc.app.cl" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cmsinner" groupId="com.tbc.app.cmsinner" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cmsouter" groupId="com.tbc.app.cmsouter" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cr-svc" groupId="com.tbc.app.cr" version="4.0.0-SNAPSHOT" >
+	</project>    <!-- add by zlf 2012-12-3-->
+	<project name="elos" groupId="com.tbc.paas.elos" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="els" groupId="com.tbc.app.els" version="4.1.0-SNAPSHOT" >
+	</project> <!--Noted by zlf 2012-12-5-->
+	<project name="fb" groupId="com.tbc.app.fb" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="ems" groupId="com.tbc.app.ems" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="fz" groupId="com.tbc.paas.fz" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="gw" groupId="com.tbc.paas.gw" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="im" groupId="com.tbc.paas.im" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="is" groupId="com.tbc.paas.is" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="jm" groupId="com.tbc.paas.jm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="km" groupId="com.tbc.app.km" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="lcms" groupId="com.tbc.app.lcms" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="login" groupId="com.tbc.paas.login" version="4.0.0-SNAPSHOT" >
+	<exclude dir="custom"/>
+	</project>
+	<project name="oms" groupId="com.tbc.paas.oms" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="ps" groupId="com.tbc.app.ps" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="qa" groupId="com.tbc.app.qa" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="qsm" groupId="com.tbc.app.qsm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="rfs" groupId="com.tbc.app.rfs" version="4.1.1-SNAPSHOT" >
+	</project>
+	<project name="sf-server" groupId="com.tbc.framework.sf" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="skm" groupId="com.tbc.app.skm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="tm" groupId="com.tbc.app.tm" version="4.0.0-SNAPSHOT" >
+	</project>    <!-- add by zlf 20121205-->
+	<project name="twm" groupId="com.tbc.app.twm" version="4.0.0-SNAPSHOT" >
+	</project>    
+	<project name="uc" groupId="com.tbc.paas.uc" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="up" groupId="com.tbc.app.up" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="wb" groupId="com.tbc.app.wb" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="wp" groupId="com.tbc.app.wp" version="4.0.0-SNAPSHOT" >
+		<exclude dir="default/edition"/>
+	</project>
+	<project name="vm" groupId="com.tbc.app.vm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cs" groupId="com.tbc.app.cs" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="component" groupId="com.tbc.paas.component" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="upyl" groupId="com.tbc.app.up" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="upls" groupId="com.tbc.app.up" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="jw" groupId="com.tbc.app.jw" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="dc" groupId="com.tbc.app.dc" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="wgt" groupId="com.tbc.app.wgt" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="open" groupId="com.tbc.paas.open" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="ts" groupId="com.tbc.paas.ts" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="oem" groupId="com.tbc.app.oem" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="os" groupId="com.tbc.paas.os" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="css" groupId="com.tbc.paas.css" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="rtr" groupId="com.tbc.app.rtr" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="ehr" groupId="com.tbc.app.ehr" version="4.0.0-SNAPSHOT" >
+	<project name="webdesk" groupId="com.tbc.ui" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="xfs" groupId="com.tbc.app.rfs" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="tms" groupId="com.tbc.app.tms" version="4.0.0-SNAPSHOT" >
+	</project>
+	<!-- 所有svc工程 -->
+	<project name="af-svc" groupId="com.tbc.paas.af" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="anv-svc" groupId="com.tbc.paas.anv" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="bbs-svc" groupId="com.tbc.app.bbs" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="btm-svc" groupId="com.tbc.app.btm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="bdr-svc" groupId="com.tbc.app.bdr" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="bol-svc" groupId="com.tbc.app.bol" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cal-svc" groupId="com.tbc.app.cal" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cmsinner-svc" groupId="com.tbc.app.cmsinner" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cmsouter-svc" groupId="com.tbc.app.cmsouter" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cs-svc" groupId="com.tbc.app.cs" version="4.0.0-SNAPSHOT" >
+	</project>    <!-- add by zlf 1/17/2013-->
+	<project name="dsc-svc" groupId="com.tbc.app.dsc" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="elos-svc" groupId="com.tbc.paas.elos" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="els-svc" groupId="com.tbc.app.els" version="4.1.0-SNAPSHOT" >
+	</project>
+	<project name="ems-svc" groupId="com.tbc.app.ems" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="im-svc" groupId="com.tbc.paas.im" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="is-svc" groupId="com.tbc.paas.is" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="jm-svc" groupId="com.tbc.paas.jm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="km-svc" groupId="com.tbc.app.km" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="lcms-svc" groupId="com.tbc.app.lcms" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="oms-svc" groupId="com.tbc.paas.oms" version="4.0.1-SNAPSHOT" >
+	</project>
+	<project name="ps-svc" groupId="com.tbc.app.ps" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="qa-svc" groupId="com.tbc.app.qa" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="qsm-svc" groupId="com.tbc.app.qsm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="rfs-svc" groupId="com.tbc.app.rfs" version="4.1.1-SNAPSHOT" >
+	</project>
+	<project name="sfm-svc" groupId="com.tbc.framework.sfm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="skm-svc" groupId="com.tbc.app.skm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="tag-svc" groupId="com.tbc.paas.tag" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="tm-svc" groupId="com.tbc.app.tm" version="4.0.0-SNAPSHOT" >
+	</project>    <!-- add by zlf 20121205-->
+	<project name="uc-svc" groupId="com.tbc.paas.uc" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="wb-svc" groupId="com.tbc.app.wb" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="webcommon-svc" groupId="com.tbc.paas.webcommon" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="wp-svc" groupId="com.tbc.app.wp" version="4.0.0-SNAPSHOT" >
+	</project>    <!-- add by zlf 1/8/2013-->
+	<project name="vm-svc" groupId="com.tbc.app.vm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="sl-svc" groupId="com.tbc.paas.sl" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="jw-svc" groupId="com.tbc.app.jw" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="dc-svc" groupId="com.tbc.app.dc" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="fb-svc" groupId="com.tbc.app.fb" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cm" groupId="com.tbc.app.cm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="cm-svc" groupId="com.tbc.app.cm" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="ts-svc" groupId="com.tbc.paas.ts" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="oem-svc" groupId="com.tbc.app.oem" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="os-svc" groupId="com.tbc.paas.os" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="ds-svc" groupId="com.tbc.paas.ds" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="xfs-svc" groupId="com.tbc.app.rfs" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="tms-svc" groupId="com.tbc.app.tms" version="4.0.0-SNAPSHOT" >
+	</project>
+	<project name="twm-svc" groupId="com.tbc.app.twm" version="4.0.0-SNAPSHOT" >
+	</project>
+</projects>
